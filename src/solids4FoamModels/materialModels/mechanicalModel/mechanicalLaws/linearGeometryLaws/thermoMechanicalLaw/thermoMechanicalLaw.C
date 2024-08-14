@@ -337,7 +337,13 @@ Foam::thermoMechanicalLaw::thermoMechanicalLaw
     TcaseDir_(mechanicalLaw::dict().lookupOrAddDefault<fileName>("TcaseDirectory", ".")),
     TrunTimePtr_(),
     TmeshPtr_(),
-    curTimeIndex_(-1)
+    curTimeIndex_(-1),
+    solutionDIdentityTensor_
+    (
+        mechanicalLaw::mesh().solutionD()[vector::X] == 1 ? 1 : 0, 0, 0,
+        mechanicalLaw::mesh().solutionD()[vector::Y] == 1 ? 1 : 0, 0,
+        mechanicalLaw::mesh().solutionD()[vector::Z] == 1 ? 1 : 0
+    )
 {}
 
 
@@ -362,7 +368,11 @@ void Foam::thermoMechanicalLaw::correct(volSymmTensorField& sigma)
     const volScalarField& T = lookupTemperatureField();
 
     // Add thermal stress term
-    sigma -= 3.0*mechLawPtr_->bulkModulus()*alpha_*(T - T0_)*symmTensor(I);
+    sigma -=
+    (
+        3.0*mechLawPtr_->bulkModulus()*alpha_*(T - T0_)
+       *solutionDIdentityTensor_
+    );
 }
 
 
@@ -381,7 +391,7 @@ void Foam::thermoMechanicalLaw::correct(surfaceSymmTensorField& sigma)
     const surfaceScalarField Kf(fvc::interpolate(mechLawPtr_->bulkModulus()));
 
     // Add thermal stress term
-    sigma -= 3.0*Kf*alpha_*(Tf - T0_)*symmTensor(I);
+    sigma -= 3.0*Kf*alpha_*(Tf - T0_)*solutionDIdentityTensor_;
 }
 
 

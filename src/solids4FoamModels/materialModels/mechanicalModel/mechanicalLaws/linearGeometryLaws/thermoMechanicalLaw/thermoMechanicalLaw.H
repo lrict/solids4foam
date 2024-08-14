@@ -87,6 +87,10 @@ class thermoMechanicalLaw
         //- Store the current time index so we know the start of a new time-step
         label curTimeIndex_;
 
+        //- "Identity matrix" whose diagonal elements are only 1 if the
+        //  equations are solved in this spatial direction
+        const symmTensor solutionDIdentityTensor_;
+
     // Private Member Functions
 
         //- Make the TrunTime object
